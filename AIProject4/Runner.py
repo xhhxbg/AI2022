@@ -96,7 +96,10 @@ class Runner(object):
                 break
 
         """train Q tabel"""
-        
+        accumulated_reward = 0
+        award_lsit = []
+        loss_list = []
+
         for e in range(epoch_limit):
 
             prev_states = [None, None]
@@ -109,17 +112,25 @@ class Runner(object):
                 desc="Trainning...",
             )
             for i in range(training_per_epoch):
-                _, _, loss = self.robot.train_update()
+                _, reward, loss = self.robot.train_update()
                 
                 if self.maze.sense_robot() in prev_states:
                     # print('Repeated step!')
                     # break
                     pass
+                
+                loss_list.append(loss)
+
+                accumulated_reward += reward
+
+                award_lsit.append(accumulated_reward)
 
                 prev_states.pop(0)
                 prev_states.append(self.maze.sense_robot())
                 p_bar.update(1)
             p_bar.close()
+
+            self.add_statics(accumulated_reward, e)
 
             """test DQN"""
             self.robot.reset()
@@ -138,6 +149,15 @@ class Runner(object):
             print(f"epoch: {e}, success: {success}, loss: {loss}, test end at: {self.maze.sense_robot()}")
 
             if success:
+
+                plt.figure(dpi=300)
+                plt.plot(loss_list)
+                plt.savefig('loss.jpg')
+
+                plt.figure(dpi=300)
+                plt.plot(award_lsit)
+                plt.savefig('award.jpg')
+
                 break
             else:
                 continue

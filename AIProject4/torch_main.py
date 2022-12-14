@@ -252,6 +252,9 @@ if __name__ == "__main__":
     r = Robot(g)
 
 
-    r.show_Q(print_flag=False)
+
+    plt.figure()
+
+    r.show_Q(print_flag=True)
 
     g.show_dir(r.q_table)
